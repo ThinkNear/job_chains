@@ -2,7 +2,13 @@ require 'spec_helper'
 
 describe JobChainsMiddleware do
   subject { JobChainsMiddleware.new }
-  
+  before do
+    @logger = double(Logger)
+    @logger.stub(:info)
+    @logger.stub(:error)
+    Sidekiq.stub(:logger).and_return(@logger)
+  end
+
   class DummySidekiqWorker
     include Sidekiq::Worker
     
@@ -86,7 +92,7 @@ describe JobChainsMiddleware do
     context "when before block returns false on the first attempt" do
       it "should log and raise a SilentSidekiqError" do
         @worker.should_receive(:before).and_return(false)
-        Rails.logger.should_receive(:info)
+        @logger.should_receive(:info)
         expect {
           subject.check_preconditions(@worker, 'retry_count' => '1', 'retry' => '5', 'args' => [])
         }.to raise_error(SilentSidekiqError)
@@ -96,7 +102,7 @@ describe JobChainsMiddleware do
       before { @worker.should_receive(:before).and_return(false) }
       context "when worker does not have before_failed defined" do
         it "should not log and raise a RuntimeError" do
-          Rails.logger.should_not_receive(:info)
+          @logger.should_not_receive(:info)
           expect {
             subject.check_preconditions(@worker, 'retry_count' => '5', 'retry' => '5', 'args' => [])
           }.to raise_error("Attempted #{@worker.class}, but preconditions were never met!")

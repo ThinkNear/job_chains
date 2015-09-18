@@ -33,7 +33,7 @@ class JobChainsMiddleware
         worker.respond_to?(:before_failed) ? worker.before_failed : raise("Attempted #{worker.class.name}, but preconditions were never met!")
       else
         error_message = "Pre-conditions for #{worker.class.name}(#{msg['args'].join(',')}) failed."
-        Rails.logger.info(error_message)
+        Sidekiq.logger.info(error_message)
         # Will cause Honeybadger to ignore the error, but Sidekiq will retry the task
         raise SilentSidekiqError.new(error_message)
       end
