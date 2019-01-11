@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'honeybadger'
   s.add_dependency 'resque'
   s.add_dependency 'sidekiq'
+  s.add_dependency 'sinatra'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rspec-rails'
